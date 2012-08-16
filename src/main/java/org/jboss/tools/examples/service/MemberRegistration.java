@@ -14,8 +14,9 @@ import javax.inject.Inject;
 import org.bson.types.ObjectId;
 import org.jboss.tools.examples.model.Member;
 
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -31,56 +32,66 @@ public class MemberRegistration {
 	@Inject
 	private Event<Member> memberEventSrc;
 
-	private Mongo m;
-	private DBCollection memberColl;
+	private Morphia morphia;
+	private Mongo mongo;
+	private Datastore ds;
+	//private DBCollection memberColl;
 
 	@SuppressWarnings("unused")
 	@PostConstruct
 	private void initDB() throws UnknownHostException {
-		m = new Mongo();
-		DB db = m.getDB("memberDB");
-		memberColl = db.getCollection("members");
+		morphia = new Morphia();
+		mongo = new Mongo();
+		//DB db = m.getDB("memberDB");
+		
+		ds = morphia.createDatastore(mongo, "memberDB");
+		morphia.map(Member.class);
+		
+		
+		/*memberColl = db.getCollection("members");
 		if (memberColl == null) {
 			memberColl = db.createCollection("members", null);
-		}
+		}*/
 	}
 
 	@SuppressWarnings("unused")
 	@PreDestroy
 	private void closeDB() {
-		m.close();
+		mongo.close();
 	}
 	
 	public void register(Member member) throws Exception {
 		log.info("Registering " + member.getName());
-		BasicDBObject doc = member.toDBObject();
+		ds.save(member).getId();
+		
+		/*BasicDBObject doc = member.toDBObject();
 		memberColl.insert(doc);
-		member.setId(doc.get("_id").toString());
+		member.setId(doc.get("_id").toString());*/
 		memberEventSrc.fire(member);
 	}
 
 	public List<Member> listAllMembers() {
-		List<Member> members = new ArrayList<Member>();
+		return ds.find(Member.class).asList();
+		/*List<Member> members = new ArrayList<Member>();
 		DBCursor cur = memberColl.find();
 		
 		for (DBObject dbo : cur.toArray()) {
 			members.add(Member.fromDBObject(dbo));
 		}
 		
-		return members;
+		return members;*/
 	}
 	
 	public Member findMemberById(String id) {
-		System.out.println(id);
-		ObjectId oid = new ObjectId(id);
-		System.out.println(oid);
+		return ds.find(Member.class).field("_id").equal(new ObjectId(id)).get();
+		/*ObjectId oid = new ObjectId(id);
 		DBObject res = memberColl.findOne(new BasicDBObject("_id", oid));
-		System.out.println(res);		
-		return (Member) Member.fromDBObject(res);
+		return (Member) Member.fromDBObject(res);*/
 	}
 	
 	public List<Member> listAllMembersOrderByName() {
-		List<Member> members = new ArrayList<Member>();
+		return ds.find(Member.class).order("name").asList();
+		/*List<Member> members = new ArrayList<Member>();
 		DBCursor cur = memberColl.find();
 		cur.sort(new BasicDBObject("name", 1));
 		
@@ -88,7 +99,7 @@ public class MemberRegistration {
 			members.add(Member.fromDBObject(dbo));
 		}
 		
-		return members;		
+		return members;*/		
 	}
 
 }
