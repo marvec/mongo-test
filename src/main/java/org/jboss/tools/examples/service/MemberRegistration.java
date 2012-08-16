@@ -55,7 +55,7 @@ public class MemberRegistration {
 		log.info("Registering " + member.getName());
 		BasicDBObject doc = member.toDBObject();
 		memberColl.insert(doc);
-		member.setId((ObjectId) doc.get("_id"));
+		member.setId(doc.get("_id").toString());
 		memberEventSrc.fire(member);
 	}
 
@@ -71,8 +71,24 @@ public class MemberRegistration {
 	}
 	
 	public Member findMemberById(String id) {
+		System.out.println(id);
 		ObjectId oid = new ObjectId(id);
-		return (Member) memberColl.findOne(new BasicDBObject().put("_id", oid));
+		System.out.println(oid);
+		DBObject res = memberColl.findOne(new BasicDBObject("_id", oid));
+		System.out.println(res);		
+		return (Member) Member.fromDBObject(res);
+	}
+	
+	public List<Member> listAllMembersOrderByName() {
+		List<Member> members = new ArrayList<Member>();
+		DBCursor cur = memberColl.find();
+		cur.sort(new BasicDBObject("name", 1));
+		
+		for (DBObject dbo : cur.toArray()) {
+			members.add(Member.fromDBObject(dbo));
+		}
+		
+		return members;		
 	}
 
 }

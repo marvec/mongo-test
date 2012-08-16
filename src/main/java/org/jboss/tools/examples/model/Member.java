@@ -30,7 +30,7 @@ public class Member implements Serializable {
 
 	@Id
 	@GeneratedValue
-	private ObjectId id;
+	private String id = null;
 
 	@NotNull
 	@Size(min = 1, max = 25)
@@ -48,11 +48,11 @@ public class Member implements Serializable {
 	@Column(name = "phone_number")
 	private String phoneNumber;
 
-	public ObjectId getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(ObjectId id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -83,6 +83,9 @@ public class Member implements Serializable {
 	public BasicDBObject toDBObject() {
 		BasicDBObject doc = new BasicDBObject();
 
+		if (id != null) {
+			doc.put("_id", new ObjectId(id));
+		}
 		doc.put("name", name);
 		doc.put("email", email);
 		doc.put("phone", phoneNumber);
@@ -93,7 +96,8 @@ public class Member implements Serializable {
 	public static Member fromDBObject(DBObject doc) {
 		Member m = new Member();
 
-		m.id = (ObjectId) doc.get("_id");
+		m.id = doc.get("_id").toString();
+		System.out.println(doc.get("_id"));
 		m.name = (String) doc.get("name");
 		m.email = (String) doc.get("email");
 		m.phoneNumber = (String) doc.get("phone");

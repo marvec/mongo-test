@@ -31,7 +31,7 @@ public class MemberResourceRESTService {
    }
 
    @GET
-   @Path("/{id:[0-9][0-9]*}")
+   @Path("/{id:[0-9a-f][0-9a-f]*}")
    @Produces("text/xml")
    public Member lookupMemberById(@PathParam("id") String id) {
       return memberRegistration.findMemberById(id);
