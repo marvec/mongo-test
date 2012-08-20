@@ -6,8 +6,9 @@ import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import javax.ws.rs.ext.Provider;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.bson.types.ObjectId;
 import org.hibernate.validator.constraints.Email;
@@ -44,10 +45,16 @@ public class Member implements Serializable {
 	@Property("phone_number")
 	private String phoneNumber;
 
+	@XmlTransient
 	public ObjectId getId() {
 		return id;
 	}
 
+	@XmlElement(name = "id")
+	public String getIdAsString() {
+		return id.toString();
+	}
+	
 	public void setId(ObjectId id) {
 		this.id = id;
 	}
@@ -75,29 +82,4 @@ public class Member implements Serializable {
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
-
-/*	public BasicDBObject toDBObject() {
-		BasicDBObject doc = new BasicDBObject();
-
-		if (id != null) {
-			doc.put("_id", id);
-		}
-		doc.put("name", name);
-		doc.put("email", email);
-		doc.put("phone", phoneNumber);
-		
-		return doc;
-	}
-
-	public static Member fromDBObject(DBObject doc) {
-		Member m = new Member();
-
-		m.id = (ObjectId) doc.get("_id");
-		System.out.println(doc.get("_id"));
-		m.name = (String) doc.get("name");
-		m.email = (String) doc.get("email");
-		m.phoneNumber = (String) doc.get("phone");
-
-		return m;
-	}*/
 }
